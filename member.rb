@@ -1,5 +1,5 @@
 class Member
-  INITIAL_BANK = 20
+  INITIAL_BANK = 100
 
   attr_accessor :bank, :score, :cards
   attr_reader :name, :color

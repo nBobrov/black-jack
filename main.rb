@@ -129,7 +129,7 @@ class Main
 
   def transfer_bank(winner)
     if winner.nil?
-      @user += DEFAULT_BET
+      @user.bank += DEFAULT_BET
       @dealer.bank += DEFAULT_BET
     else
       winner.bank += @bank
