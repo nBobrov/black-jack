@@ -1,5 +1,5 @@
 class Member
-  INITIAL_BANK = 100
+  INITIAL_BANK = 20
 
   attr_accessor :bank, :score, :cards
   attr_reader :name, :color
@@ -21,5 +21,14 @@ class Member
 
   def bet(value)
     @bank -= value
+  end
+
+  def reset
+    @cards = []
+    @score = 0
+  end
+
+  def bankrupt?
+    true if @bank.zero?
   end
 end

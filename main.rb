@@ -12,18 +12,19 @@ class Main
                { name: 'Открыть карты', method: 'open_card' },
                { name: 'Пропустить', method: 'skip_turn' },
                { name: 'Выйти', method: 'exit' }].freeze
-
   END_MENU = [{ name: 'Повторить игру', method: 'request_game_replay' },
               { name: 'Выйти', method: 'exit' }].freeze
+
+  DEFAULT_BET = 10
+  VICTORY_SCORE = 21
 
   attr_reader :winner
 
   def initialize
     @dealer = Dealer.new
     set_user
-    game_start
-    info
-    menu(GAME_MENU)
+    start_game
+    welcome_user
   end
 
   def set_user
@@ -37,26 +38,32 @@ class Main
     end
   end
 
-  def game_start
+  def start_game
     @deck = Deck.new
     @winner = nil
     @bank = 0
-    start
-    welcome
+
+    bet(@user)
+    bet(@dealer)
+
+    deal_cards_to_member(@user, 2)
+    deal_cards_to_member(@dealer, 2)
   end
 
-  def welcome
+  def welcome_user
     system 'clear'
     puts "Привет, #{format_text(@user.name, @user.color, 'bold')}! Игра началась."
     puts '__________________________________________________________________________'
+    game_info
+    menu(GAME_MENU)
   end
 
-  def info
+  def game_info(mode = 0)
     member_info(@user)
     puts ''
     puts "Банк игры: #{@bank}"
     puts ''
-    member_info(@dealer, 0)
+    member_info(@dealer, mode)
   end
 
   def member_info(member, mode = 1)
@@ -70,7 +77,7 @@ class Main
     puts 'Карты:'
     member.cards.each_with_index do |card, index|
       if mode == 1
-        puts "#{index + 1} - #{format_text((card.suit + card.value), card.color)}"
+        puts "#{index + 1} - #{format_text(card.suit, card.color) + card.value}"
       else
         puts "#{index + 1} - **"
       end
@@ -79,54 +86,53 @@ class Main
 
   def add_card
     deal_cards_to_member(@user)
-    info
     if check_open_card
       open_card
     else
       dealer_move
+      game_info
     end
   end
 
   def open_card
-    finish
+    game_info(1)
+    game_finish
     if winner.nil?
       puts 'Ничья'
     else
       puts "Победитель #{format_text(winner.name, 'green')}"
     end
     menu(END_MENU)
+    exit
   end
 
   def skip_turn
-    info
+    game_info
     dealer_move
   end
 
   def request_game_replay
-    game_start
+    return unless check_member_bank.nil?
+
+    @dealer.reset
+    @user.reset
+    start_game
+    game_info
+    menu(GAME_MENU)
+    exit
   end
 
-  DEFAULT_BET = 10
-  VICTORY_SCORE = 21
-
-  def start
-    bet(@user)
-    bet(@dealer)
-    deal_cards_to_member(@user, 2)
-    deal_cards_to_member(@dealer, 2)
-  end
-
-  def finish
+  def game_finish
     @winner = nominate_winner
     transfer_bank(@winner)
   end
 
   def transfer_bank(winner)
     if winner.nil?
-      @user = DEFAULT_BET
-      @dealer.bank = DEFAULT_BET
+      @user += DEFAULT_BET
+      @dealer.bank += DEFAULT_BET
     else
-      winner.bank = @bank
+      winner.bank += @bank
     end
     @bank = 0
   end
@@ -152,6 +158,7 @@ class Main
       open_card
     else
       menu(GAME_MENU)
+      exit
     end
   end
 
@@ -161,9 +168,16 @@ class Main
     true
   end
 
+  def check_member_bank
+    bankrupt = @dealer if @dealer.bankrupt?
+    bankrupt = @user if @user.bankrupt?
+    puts format_text("У участника #{bankrupt.name} в банке нет средств для ставки!", 'red') unless bankrupt.nil?
+    bankrupt
+  end
+
   def deal_cards_to_member(member, card_count = 1)
     if member.cards.length > 2
-      puts 'У вас максимальное количество карт'
+      puts format_text('У вас максимальное количество карт', 'red')
       return
     end
 
