@@ -6,7 +6,7 @@ class Member
   attr_accessor :bank
   attr_reader :name, :hand, :color
 
-  def initialize(*)
+  def initialize
     @bank = INITIAL_BANK
     @hand = Hand.new
   end

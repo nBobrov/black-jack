@@ -10,10 +10,13 @@ class User < Member
   validate :name, :format, NAME_FORMAT
   validate :name, :type, String
 
-  def initialize(name)
+  def initialize
     super
-    @name = name.capitalize
     @color = USER_COLOR
+  end
+
+  def name=(name)
+    @name = name.capitalize
     validate!
   end
 end
