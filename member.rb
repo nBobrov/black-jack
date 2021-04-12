@@ -1,22 +1,19 @@
+require_relative 'hand'
+
 class Member
   INITIAL_BANK = 100
 
-  attr_accessor :bank, :score, :cards
-  attr_reader :name, :color
+  attr_accessor :bank
+  attr_reader :name, :hand, :color
 
   def initialize(*)
     @bank = INITIAL_BANK
-    @cards = []
-    @score = 0
-  end
-
-  def scoring(card)
-    @score += card.get_score(@score)
+    @hand = Hand.new
   end
 
   def add_card(card)
-    @cards << card
-    scoring(card)
+    @hand.cards << card
+    @hand.scoring(card)
   end
 
   def bet(value)
@@ -24,8 +21,8 @@ class Member
   end
 
   def reset
-    @cards = []
-    @score = 0
+    @hand.cards = []
+    @hand.score = 0
   end
 
   def bankrupt?

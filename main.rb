@@ -68,14 +68,14 @@ class Main
 
   def member_info(member, mode = 1)
     puts "Участник игры: #{format_text(member.name, member.color, 'bold')}"
-    puts "Количество очков: #{member.score}" if mode == 1
+    puts "Количество очков: #{member.hand.score}" if mode == 1
     puts "Банк: #{member.bank} долларов"
     cards_info(member, mode)
   end
 
   def cards_info(member, mode = 1)
     puts 'Карты:'
-    member.cards.each_with_index do |card, index|
+    member.hand.cards.each_with_index do |card, index|
       if mode == 1
         puts "#{index + 1} - #{format_text(card.suit, card.color) + card.value}"
       else
@@ -143,15 +143,15 @@ class Main
   end
 
   def nominate_winner
-    if @user.score > VICTORY_SCORE || (VICTORY_SCORE - @user.score) > (VICTORY_SCORE - @dealer.score).abs
+    if @user.hand.score > VICTORY_SCORE || (VICTORY_SCORE - @user.hand.score) > (VICTORY_SCORE - @dealer.hand.score).abs
       @dealer
-    elsif (VICTORY_SCORE - @user.score) < (VICTORY_SCORE - @dealer.score).abs
+    elsif (VICTORY_SCORE - @user.hand.score) < (VICTORY_SCORE - @dealer.hand.score).abs
       @user
     end
   end
 
   def dealer_move
-    return unless (@dealer.score <= 17) && (@dealer.cards.length < 3)
+    return unless (@dealer.hand.score <= 17) && (@dealer.hand.cards.length < 3)
 
     deal_cards_to_member(@dealer)
     if check_open_card
@@ -163,7 +163,7 @@ class Main
   end
 
   def check_open_card
-    return unless @user.cards.length == 3 && @dealer.cards.length == 3
+    return unless @user.hand.cards.length == 3 && @dealer.hand.cards.length == 3
 
     true
   end
@@ -176,7 +176,7 @@ class Main
   end
 
   def deal_cards_to_member(member, card_count = 1)
-    if member.cards.length > 2
+    if member.hand.cards.length > 2
       puts format_text('У вас максимальное количество карт', 'red')
       return
     end
